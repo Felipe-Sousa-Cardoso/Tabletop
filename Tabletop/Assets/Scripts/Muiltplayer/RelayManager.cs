@@ -10,10 +10,15 @@ using Unity.Services.Relay.Models;
 public class RelayManager : MonoBehaviour
 {
     public static RelayManager Instance;
-    //private UnityTransport utp;
 
     private void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);  // destrói o duplicado
+            return;
+        }
+
         Instance = this;
     }
 
@@ -26,23 +31,50 @@ public class RelayManager : MonoBehaviour
     {
         try
         {
+            if (UnityServices.State != ServicesInitializationState.Uninitialized)
+                return;
+
             await UnityServices.InitializeAsync();
-            await AuthenticationService.Instance.SignInAnonymouslyAsync();
-            Debug.Log("Relay conectado com sucesso!");
+
+            if (!AuthenticationService.Instance.IsSignedIn)
+                await AuthenticationService.Instance.SignInAnonymouslyAsync();
+
+            Debug.Log("Relay pronto.");
         }
         catch (System.Exception e)
         {
-            Debug.LogError("Erro ao inicializar Unity Services: " + e.Message);
+            Debug.LogError("Erro ao iniciar Relay: " + e);
         }
+    }
+    public async Task<string> CreateRelayAndHost()
+    {
+        Debug.Log("1h");
+        Allocation allocation = await RelayService.Instance.CreateAllocationAsync(8);
+        Debug.Log("2h");
+        string joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
+        Debug.Log("3h");
+        var relayServerData = AllocationUtils.ToRelayServerData(allocation, "dtls");
+        Debug.Log("4h");
+
+        NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
+        Debug.Log("5h");
+        return NetworkManager.Singleton.StartHost() ? joinCode : null;
     }
 
     public async Task<bool> JoinRelayWithCode(string joinCode)
     {
-        var joinAllocation = await RelayService.Instance.JoinAllocationAsync(joinCode);
+        Debug.Log("1c");
+        var joinAllocation = await RelayService.Instance.JoinAllocationAsync(joinCode: joinCode);
+        Debug.Log("2c");
         var relayServerData = AllocationUtils.ToRelayServerData(joinAllocation, "dtls");
+        Debug.Log("3c");
 
         NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
-        NetworkManager.Singleton.StartClient();
-        return true;
+        Debug.Log("4c");
+
+       // return !string.IsNullOrEmpty(joinCode) && NetworkManager.Singleton.StartClient();
+
+        bool result = NetworkManager.Singleton.StartClient();
+        return result;
     }
 }

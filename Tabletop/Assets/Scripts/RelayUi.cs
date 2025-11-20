@@ -14,6 +14,7 @@ public class RelayUI : MonoBehaviour
     {
         hostButton.onClick.AddListener(OnHostClicked);
         joinButton.onClick.AddListener(OnJoinClicked);
+        Application.targetFrameRate = 60;
     }
 
     async void OnHostClicked()
