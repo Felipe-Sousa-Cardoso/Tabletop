@@ -19,35 +19,30 @@ public class JogadorControlador : NetworkBehaviour
         {          
             if (hit.collider.CompareTag("Mapa"))
             {
-                print("1");
                 if (tokenSelecionado == null)
                 {
                     targetPos = hit.point;
-                    print("2");
                 }
                 else
                 {
-                    print("3");
-                    tokenSelecionado.mover(hit.point);
+                    tokenSelecionado.MoverRpc(hit.point);
                     tokenSelecionado = null;
                 }
             }
             if (hit.collider.CompareTag("Tokens"))
             {
-                print("4");
                 tokenSelecionado = hit.collider.GetComponent<Token>();
             }
         }
     }
     public override void OnNetworkSpawn()
     {
-        if (IsOwner)
-        {
-            action = new InputSystem_Actions();
-            action.Enable(); // só habilita input no jogador local
+        if (!IsOwner) return;
+        action = new InputSystem_Actions();
+        action.Enable(); // só habilita input no jogador local
 
-            action.Player.Mouse.performed += MouseClicado;
-            maskDoraycast = LayerMask.GetMask("Mapa", "Tokens");
-        }
+        action.Player.Mouse.performed += MouseClicado;
+        maskDoraycast = LayerMask.GetMask("Mapa", "Tokens");
+        
     }
 }

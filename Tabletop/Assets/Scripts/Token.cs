@@ -4,34 +4,24 @@ using UnityEngine.InputSystem;
 
 public class Token : NetworkBehaviour
 {
-    JogadorControlador jog;
     public bool selecionado;
+    Collider col;
     Renderer rd;
 
 
     private void Start()
     {
-        jog = GetComponent<JogadorControlador>();
         rd = GetComponent<Renderer>();
+        col = GetComponent<Collider>();
     }
 
-    private void Update()
+
+
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    public void MoverRpc(Vector3 destino, RpcParams rpcParams = default)
     {
-        if (IsOwner)
-        {
-            if (selecionado)
-            {
-                rd.material.color = Color.green;
-            }
-            else
-            {
-                rd.material.color = Color.red;
-            }
-        }      
-    }
-    public void mover(Vector3 local)
-    {
-        print(local);
-        transform.position = local;
+
+        float altura = col.bounds.extents.y;
+        transform.position = new Vector3(destino.x, destino.y + altura / 2f, destino.z);
     }
 }
