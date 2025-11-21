@@ -4,6 +4,8 @@ using UnityEngine.InputSystem;
 
 public class JogadorControlador : NetworkBehaviour
 {
+    Camera cam;
+    
     InputSystem_Actions action;
 
     public Vector3 targetPos;
@@ -38,11 +40,25 @@ public class JogadorControlador : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         if (!IsOwner) return;
+        cam = Camera.main;
+
         action = new InputSystem_Actions();
         action.Enable(); // só habilita input no jogador local
 
         action.Player.Mouse.performed += MouseClicado;
-        maskDoraycast = LayerMask.GetMask("Mapa", "Tokens");
-        
+        maskDoraycast = LayerMask.GetMask("Mapa", "Tokens");     
+    }
+    private void Update()
+    {
+        if (!IsOwner) return;
+        Vector3 move = new Vector3(action.Player.Movimento.ReadValue<Vector2>().x,action.Player.Zoom.ReadValue<float>(), action.Player.Movimento.ReadValue<Vector2>().y);
+        cam.transform.position += move;
+        Vector3 rot = new Vector3(0, action.Player.RotacaoDaCameta.ReadValue<float>(), 0);
+        Vector3 rotAtual = cam.transform.rotation.eulerAngles;
+        rotAtual += rot;
+
+        cam.transform.rotation = Quaternion.Euler(rotAtual);
+
+
     }
 }
