@@ -25,6 +25,10 @@ public class RelayManager : MonoBehaviour
     private async void Start()
     {
         await InitializeUnityServices();
+        if (NetworkManager.Singleton.IsServer)
+        {
+            // Conecta o evento para que o servidor gerencie o spawn de tokens
+        }
     }
 
     private async Task InitializeUnityServices()
@@ -47,30 +51,19 @@ public class RelayManager : MonoBehaviour
         }
     }
     public async Task<string> CreateRelayAndHost()
-    {
-        Debug.Log("1h");
-        Allocation allocation = await RelayService.Instance.CreateAllocationAsync(8);
-        Debug.Log("2h");
+    {    
+        Allocation allocation = await RelayService.Instance.CreateAllocationAsync(8);       Debug.Log("2h");
         string joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
-        Debug.Log("3h");
         var relayServerData = AllocationUtils.ToRelayServerData(allocation, "dtls");
-        Debug.Log("4h");
-
         NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
-        Debug.Log("5h");
         return NetworkManager.Singleton.StartHost() ? joinCode : null;
     }
 
     public async Task<bool> JoinRelayWithCode(string joinCode)
     {
-        Debug.Log("1c");
         var joinAllocation = await RelayService.Instance.JoinAllocationAsync(joinCode: joinCode);
-        Debug.Log("2c");
         var relayServerData = AllocationUtils.ToRelayServerData(joinAllocation, "dtls");
-        Debug.Log("3c");
-
         NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
-        Debug.Log("4c");
 
        // return !string.IsNullOrEmpty(joinCode) && NetworkManager.Singleton.StartClient();
 
