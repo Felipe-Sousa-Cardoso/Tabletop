@@ -24,7 +24,7 @@ public class JogadorControlador : NetworkBehaviour
     private void Update()
     {
         if (!IsOwner) return;
-        MovimentoCamera(); 
+        MovimentoCamera();
     }
     public override void OnNetworkSpawn()
     {
@@ -38,6 +38,7 @@ public class JogadorControlador : NetworkBehaviour
         action = new InputSystem_Actions();// só habilita input no jogador local
         action.Enable(); 
         action.Player.Mouse.performed += MouseClicado;
+        action.Player.Mouse2.performed += Mouse2Clicado;
 
         maskDoraycast = LayerMask.GetMask("Mapa", "Tokens");
 
@@ -61,6 +62,7 @@ public class JogadorControlador : NetworkBehaviour
         rotAtual += rot;
         cam.transform.rotation = Quaternion.Euler(rotAtual);
     } //Responsável pode todos os movimentos de camera
+
     [Rpc(SendTo.Server)]
     public void DefinirCorRpc(Color cor)
     {
@@ -69,7 +71,6 @@ public class JogadorControlador : NetworkBehaviour
             t.GetComponent<Token>().Cor(cor);
         }
     }//Cor dos tokens
-
     private void MouseClicado(InputAction.CallbackContext context)
     {
         Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue()); //Faz um raio da camera até onde o mouse está
@@ -106,5 +107,32 @@ public class JogadorControlador : NetworkBehaviour
             tokenSelecionado = tokensHit[0];
             tokenSelecionado.Selecionado(true);
         }      
+    }
+    private void Mouse2Clicado(InputAction.CallbackContext context)
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue()); //Faz um raio da camera até onde o mouse está
+
+        RaycastHit[] hits = Physics.RaycastAll(ray, 300f, maskDoraycast); //Detecta todos os hits em uma esfera em volta do clique
+
+        List<Token> tokensHit = new();
+        foreach (var h in hits)
+        {
+            if (h.collider.CompareTag("Tokens"))
+                tokensHit.Add(h.collider.GetComponent<Token>());
+            if (h.collider.CompareTag("Mapa"))
+            {
+                pontoSelecionado = h.point;
+            }
+        } //Separa os hits que atingiram tokens e o hit que atingiu o terreno
+
+        if (tokensHit.Count == 0)
+        {
+            joggUi.ApagarUISelecionarDefinir();
+        }
+        else if (tokensHit.Count >= 1)
+        {
+            Vector3 posicaoNaTela = Mouse.current.position.ReadValue() - new Vector2(880,540); //Desloca a posição do mouse com um pequeno offset ao lado do token
+            joggUi.PosicionarLista(posicaoNaTela, tokensHit);
+        }
     }
 }

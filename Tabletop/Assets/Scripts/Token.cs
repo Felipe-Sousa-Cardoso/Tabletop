@@ -11,6 +11,9 @@ public class Token : NetworkBehaviour
     ParticleSystem Ps; 
     public NetworkVariable<Color> cor = new NetworkVariable<Color>(Color.white,NetworkVariableReadPermission.Everyone,NetworkVariableWritePermission.Server); //Cor definida pelo jogador
     public NetworkVariable<FixedString32Bytes> nome = new NetworkVariable<FixedString32Bytes>("token", NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server); //Nome definido pelo jogador
+    public NetworkVariable<Vector2> barra1 = new NetworkVariable<Vector2>(new(), NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server); //Barra 1
+    public NetworkVariable<Vector2> barra2 = new NetworkVariable<Vector2>(new(), NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server); //Barra 2
+    public NetworkVariable<Vector2> barra3 = new NetworkVariable<Vector2>(new(), NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server); //Barra 3
     public Renderer baseRd; //Rederer da parte quadrada
 
 

@@ -129,18 +129,18 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""Especial"",
+                    ""name"": ""Mouse2"",
                     ""type"": ""Button"",
-                    ""id"": ""031ea796-5075-41e9-8c60-4d42f52a973f"",
+                    ""id"": ""75a4e45c-6443-4564-b04a-25af90a2ec56"",
                     ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""New action"",
+                    ""name"": ""Especial"",
                     ""type"": ""Button"",
-                    ""id"": ""75a4e45c-6443-4564-b04a-25af90a2ec56"",
+                    ""id"": ""031ea796-5075-41e9-8c60-4d42f52a973f"",
                     ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
@@ -261,11 +261,11 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""b5934b28-731f-4c7d-85bf-8016c328f9b6"",
-                    ""path"": """",
+                    ""path"": ""<Mouse>/rightButton"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""New action"",
+                    ""action"": ""Mouse2"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -374,8 +374,8 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         m_Player_RotacaoDaCameta = m_Player.FindAction("RotacaoDaCameta", throwIfNotFound: true);
         m_Player_Zoom = m_Player.FindAction("Zoom", throwIfNotFound: true);
         m_Player_Mouse = m_Player.FindAction("Mouse", throwIfNotFound: true);
+        m_Player_Mouse2 = m_Player.FindAction("Mouse2", throwIfNotFound: true);
         m_Player_Especial = m_Player.FindAction("Especial", throwIfNotFound: true);
-        m_Player_Newaction = m_Player.FindAction("New action", throwIfNotFound: true);
     }
 
     ~@InputSystem_Actions()
@@ -460,8 +460,8 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_RotacaoDaCameta;
     private readonly InputAction m_Player_Zoom;
     private readonly InputAction m_Player_Mouse;
+    private readonly InputAction m_Player_Mouse2;
     private readonly InputAction m_Player_Especial;
-    private readonly InputAction m_Player_Newaction;
     /// <summary>
     /// Provides access to input actions defined in input action map "Player".
     /// </summary>
@@ -490,13 +490,13 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         /// </summary>
         public InputAction @Mouse => m_Wrapper.m_Player_Mouse;
         /// <summary>
+        /// Provides access to the underlying input action "Player/Mouse2".
+        /// </summary>
+        public InputAction @Mouse2 => m_Wrapper.m_Player_Mouse2;
+        /// <summary>
         /// Provides access to the underlying input action "Player/Especial".
         /// </summary>
         public InputAction @Especial => m_Wrapper.m_Player_Especial;
-        /// <summary>
-        /// Provides access to the underlying input action "Player/Newaction".
-        /// </summary>
-        public InputAction @Newaction => m_Wrapper.m_Player_Newaction;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -535,12 +535,12 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
             @Mouse.started += instance.OnMouse;
             @Mouse.performed += instance.OnMouse;
             @Mouse.canceled += instance.OnMouse;
+            @Mouse2.started += instance.OnMouse2;
+            @Mouse2.performed += instance.OnMouse2;
+            @Mouse2.canceled += instance.OnMouse2;
             @Especial.started += instance.OnEspecial;
             @Especial.performed += instance.OnEspecial;
             @Especial.canceled += instance.OnEspecial;
-            @Newaction.started += instance.OnNewaction;
-            @Newaction.performed += instance.OnNewaction;
-            @Newaction.canceled += instance.OnNewaction;
         }
 
         /// <summary>
@@ -564,12 +564,12 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
             @Mouse.started -= instance.OnMouse;
             @Mouse.performed -= instance.OnMouse;
             @Mouse.canceled -= instance.OnMouse;
+            @Mouse2.started -= instance.OnMouse2;
+            @Mouse2.performed -= instance.OnMouse2;
+            @Mouse2.canceled -= instance.OnMouse2;
             @Especial.started -= instance.OnEspecial;
             @Especial.performed -= instance.OnEspecial;
             @Especial.canceled -= instance.OnEspecial;
-            @Newaction.started -= instance.OnNewaction;
-            @Newaction.performed -= instance.OnNewaction;
-            @Newaction.canceled -= instance.OnNewaction;
         }
 
         /// <summary>
@@ -704,18 +704,18 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnMouse(InputAction.CallbackContext context);
         /// <summary>
+        /// Method invoked when associated input action "Mouse2" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnMouse2(InputAction.CallbackContext context);
+        /// <summary>
         /// Method invoked when associated input action "Especial" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
         /// </summary>
         /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnEspecial(InputAction.CallbackContext context);
-        /// <summary>
-        /// Method invoked when associated input action "New action" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
-        /// </summary>
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-        void OnNewaction(InputAction.CallbackContext context);
     }
 }

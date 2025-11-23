@@ -43,18 +43,18 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Especial",
+                    "name": "Mouse2",
                     "type": "Button",
-                    "id": "031ea796-5075-41e9-8c60-4d42f52a973f",
+                    "id": "75a4e45c-6443-4564-b04a-25af90a2ec56",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
                 },
                 {
-                    "name": "New action",
+                    "name": "Especial",
                     "type": "Button",
-                    "id": "75a4e45c-6443-4564-b04a-25af90a2ec56",
+                    "id": "031ea796-5075-41e9-8c60-4d42f52a973f",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -175,11 +175,11 @@
                 {
                     "name": "",
                     "id": "b5934b28-731f-4c7d-85bf-8016c328f9b6",
-                    "path": "",
+                    "path": "<Mouse>/rightButton",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "New action",
+                    "action": "Mouse2",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
