@@ -4,6 +4,7 @@ using TMPro;
 using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 public class JogadorUi : MonoBehaviour
@@ -11,19 +12,24 @@ public class JogadorUi : MonoBehaviour
     [SerializeField] UiCores Uicores;
     [SerializeField] UiInterativaSelecionartokens UiInterativaSelecioanar;
     [SerializeField] UiInterativaDefinirInfoToken UiInterativaDefinir;
+    [SerializeField] UiAjustes UiAjustes;
 
     public JogadorControlador jogg;
     private void Start()
     {
-        Uicores.sliderR.onValueChanged.AddListener(_ => UpdateColor());
-        Uicores.sliderG.onValueChanged.AddListener(_ => UpdateColor());
-        Uicores.sliderB.onValueChanged.AddListener(_ => UpdateColor());
-        Uicores.SetarCorBotao.onClick.AddListener(SetarCor);
+        StartColor();
         UpdateColor();
         DefinirbotoesSelecionar();
         DefinirBotoesDefinir();
     }
     #region cor
+    void StartColor()
+    {
+        Uicores.sliderR.onValueChanged.AddListener(_ => UpdateColor());
+        Uicores.sliderG.onValueChanged.AddListener(_ => UpdateColor());
+        Uicores.sliderB.onValueChanged.AddListener(_ => UpdateColor());
+        Uicores.SetarCorBotao.onClick.AddListener(SetarCor);
+    }
     void UpdateColor()
     {
         Color c = new Color(
@@ -104,13 +110,25 @@ public class JogadorUi : MonoBehaviour
     }
 
     private void DefinirBotoesDefinir()
-    {
-        
+    { 
         UiInterativaDefinir.barraVermelha.onClick.AddListener(botaoVermelho);
         UiInterativaDefinir.barraVerde.onClick.AddListener(botaoVerde);
         UiInterativaDefinir.barraAzul.onClick.AddListener(botaoAzul);
 
         UiInterativaDefinir.definirNome.onClick.AddListener(botaoNome);
+        //Evita que o input da camera aconteca quando o jogador está digitando o nome do token
+        UiInterativaDefinir.nome.onSelect.AddListener(_=>inputFalso());
+        UiInterativaDefinir.nome.onDeselect.AddListener(_=>inputVerdadeiro());
+        UiInterativaDefinir.nome.onEndEdit.AddListener(_=>inputVerdadeiro());
+    }
+
+    void inputFalso()
+    {
+        jogg.EstadoDeInput = false;
+    }
+    void inputVerdadeiro()
+    {
+        jogg.EstadoDeInput = true;
     }
 
     void MostrarInformaçõesToken()
@@ -226,6 +244,12 @@ public class JogadorUi : MonoBehaviour
         UiInterativaDefinir.Base.gameObject.SetActive(false); //desativa a hud de definir variáveis
     } //Chamado do jogador controlador
     #endregion
+    #region Ajustes
+    public void Ajustes()
+    {
+        UiAjustes.resetarCamera.onClick.AddListener(jogg.resetarCamera);
+    } //Chamado pelo jogador controlador no networkSpawn
+    #endregion
 }
 [Serializable]
 public class UiCores
@@ -269,4 +293,9 @@ public class UiInterativaDefinirInfoToken
     public TMP_InputField nome;
     public TMP_InputField minimo;
     public TMP_InputField maximo;
+}
+[Serializable]
+public class UiAjustes
+{
+    public Button resetarCamera;
 }

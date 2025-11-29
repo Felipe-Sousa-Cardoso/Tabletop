@@ -17,9 +17,12 @@ public class JogadorControlador : NetworkBehaviour
     List<GameObject> tokensInstanciados = new();
     public Color cor;
 
+    bool estadoDeInput = true;//Usado para controlar quando o jogador pode fazer inputs
+    public bool EstadoDeInput { get => estadoDeInput; set => estadoDeInput = value; }
 
     int maskDoraycast; //Usado para detectar o mapa nas colisões
- 
+
+    
 
     private void Update()
     {
@@ -44,6 +47,7 @@ public class JogadorControlador : NetworkBehaviour
 
         joggUi = FindFirstObjectByType<JogadorUi>(); //Usado para trocar informações com a UI
         joggUi.jogg = this;
+        joggUi.Ajustes();
     }
     [Rpc(SendTo.Server)]
     public void tokenSpawnRpc()
@@ -55,13 +59,24 @@ public class JogadorControlador : NetworkBehaviour
     }
     void MovimentoCamera()
     {
-        Vector3 move = new Vector3(action.Player.Movimento.ReadValue<Vector2>().x, action.Player.Zoom.ReadValue<float>(), action.Player.Movimento.ReadValue<Vector2>().y);
+        if (!estadoDeInput) return;
+        Vector3 move = cam.transform.right * action.Player.Movimento.ReadValue<Vector2>().x + //compõe o movimento da camera multiplicando os vetores de movimento pelos vetores da camera, de forma que ela
+                                                                                              //se oriente para direçao da camera em vez dos eixos normais
+            cam.transform.up * action.Player.Zoom.ReadValue<float>()+
+            Vector3.ProjectOnPlane(cam.transform.forward, Vector3.up).normalized * action.Player.Movimento.ReadValue<Vector2>().y;
+
         cam.transform.position += move;
         Vector3 rot = new Vector3(0, action.Player.RotacaoDaCameta.ReadValue<float>(), 0);
         Vector3 rotAtual = cam.transform.rotation.eulerAngles;
         rotAtual += rot;
         cam.transform.rotation = Quaternion.Euler(rotAtual);
-    } //Responsável pode todos os movimentos de camera
+    } //Responsável pode todos os movimentos de camera e pelo controle de input caso seja possível
+
+    public void resetarCamera()
+    {
+        cam.transform.position = new Vector3(1, 16, -28);
+        cam.transform.rotation = Quaternion.Euler(38, 0, 0);
+    }//Chamado pela UI para resetar a posição da camera
 
     [Rpc(SendTo.Server)]
     public void DefinirCorRpc(Color cor)
