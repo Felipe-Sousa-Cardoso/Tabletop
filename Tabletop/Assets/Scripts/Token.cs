@@ -59,10 +59,20 @@ public class Token : NetworkBehaviour
         float altura = col.bounds.extents.y;
         transform.position = new Vector3(destino.x, destino.y + altura / 2f, destino.z);
     }
+    #region Alteração das variáveis de rede
     public void Cor(Color color) //Usado para definir a cor dos tokens, é chamado no servidor pelo script JogadorControlador
     {
         cor.Value = color;
     }
+    public void BarraVermelha(Vector2 valor)
+    {
+        barra1.Value = valor;
+    }
+    public void Nome(FixedString32Bytes valor)
+    {
+        nome.Value = valor;
+    }
+    #endregion
     private void OnColorChanged(Color oldColor, Color newColor) //Chamado sempre que a cor do jogador muda
     {
         var main = Ps.main;   

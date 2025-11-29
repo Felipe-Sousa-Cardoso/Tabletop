@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using TMPro;
+using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
@@ -22,8 +23,6 @@ public class JogadorUi : MonoBehaviour
         DefinirbotoesSelecionar();
         DefinirBotoesDefinir();
     }
-
-
     #region cor
     void UpdateColor()
     {
@@ -68,7 +67,7 @@ public class JogadorUi : MonoBehaviour
                 N++;
             }
         }//Coloca os valores nos botões dos tokens selecionados
-    }
+    }//Posiciona ambas as Ui de selecionar e definir um pouco ao lado dos tokens e preenche os botões
     void DefinirbotoesSelecionar()
     {
         // Limpar listeners existentes para evitar duplicação (BOA PRÁTICA!)
@@ -94,7 +93,7 @@ public class JogadorUi : MonoBehaviour
         // A variável "indiceDoBotao" agora contém 0, 1, ou 2.
         // Você pode usar isso para saber qual token na lista original foi clicado.
         UiInterativaSelecioanar.botaoSelecionado = indiceDoBotao-1; //guarda o valor que qual botão foi selecionado
-        UiInterativaSelecioanar.tokenSelecionado = UiInterativaSelecioanar.tokenSSelecionado[0]; //Guarda qual token foi selecionado
+        UiInterativaSelecioanar.tokenSelecionado = UiInterativaSelecioanar.tokenSSelecionado[indiceDoBotao]; //Guarda qual token foi selecionado
 
         // Agora você pode usar esse índice para pegar o Token correto
         // da lista original que gerou o menu (você precisará armazenar essa lista).
@@ -126,6 +125,10 @@ public class JogadorUi : MonoBehaviour
             UiInterativaDefinir.sliderBarraVermelha.value = UiInterativaSelecioanar.tokenSelecionado.barra1.Value.x;
             UiInterativaDefinir.sliderBarraVerde.value = UiInterativaSelecioanar.tokenSelecionado.barra2.Value.x;
             UiInterativaDefinir.sliderBarraAzul.value = UiInterativaSelecioanar.tokenSelecionado.barra3.Value.x;
+            //Define os textos de cada barra
+            UiInterativaDefinir.textoBarravermelha.text = UiInterativaSelecioanar.tokenSelecionado.barra1.Value.x + "/" + UiInterativaSelecioanar.tokenSelecionado.barra1.Value.y;
+            UiInterativaDefinir.textoBarraVerde.text = UiInterativaSelecioanar.tokenSelecionado.barra2.Value.x + "/" + UiInterativaSelecioanar.tokenSelecionado.barra2.Value.y;
+            UiInterativaDefinir.textoBarraAzul.text = UiInterativaSelecioanar.tokenSelecionado.barra3.Value.x + "/" + UiInterativaSelecioanar.tokenSelecionado.barra3.Value.y;
             //Define o nome do token
             UiInterativaDefinir.nomeDoToken.text = UiInterativaSelecioanar.tokenSelecionado.nome.Value.ToString();
         }
@@ -150,10 +153,10 @@ public class JogadorUi : MonoBehaviour
         }
         MostrarInformaçõesToken();
     }
-    [Rpc(SendTo.Server)]
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
     void definirVermelhorRpc(int valorAtual, int ValorMaximo)
     {
-        UiInterativaSelecioanar.tokenSelecionado.barra1.Value = new Vector2(valorAtual, ValorMaximo);
+        UiInterativaSelecioanar.tokenSelecionado.barra1.Value = new Vector2(valorAtual,ValorMaximo);
     }
     void botaoVerde()
     {
@@ -173,7 +176,7 @@ public class JogadorUi : MonoBehaviour
         MostrarInformaçõesToken();
     }
 
-    [Rpc(SendTo.Server)]
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
     void definirVerdeRpc(int valorAtual, int ValorMaximo)
     {
         UiInterativaSelecioanar.tokenSelecionado.barra2.Value =
@@ -197,18 +200,20 @@ public class JogadorUi : MonoBehaviour
         MostrarInformaçõesToken();
     }
 
-    [Rpc(SendTo.Server)]
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
     void definirAzulRpc(int valorAtual, int ValorMaximo)
     {
         UiInterativaSelecioanar.tokenSelecionado.barra3.Value =
             new Vector2(valorAtual, ValorMaximo);
     }
-
+    
     void botaoNome()
-    {
-        definirNomeRpc();
+    {      
+        definirNomeRpc();     
         MostrarInformaçõesToken();
     }
+
+    // O método RPC que o Cliente chama:
     [Rpc(SendTo.Server)]
     void definirNomeRpc()
     {
