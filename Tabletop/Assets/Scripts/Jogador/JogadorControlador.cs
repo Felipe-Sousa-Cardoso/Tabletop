@@ -71,7 +71,6 @@ public class JogadorControlador : NetworkBehaviour
         rotAtual += rot;
         cam.transform.rotation = Quaternion.Euler(rotAtual);
     } //Responsável pode todos os movimentos de camera e pelo controle de input caso seja possível
-
     public void resetarCamera()
     {
         cam.transform.position = new Vector3(1, 16, -28);
@@ -110,18 +109,26 @@ public class JogadorControlador : NetworkBehaviour
                 tokenSelecionado.Selecionado(false);
                 tokenSelecionado.MoverRpc(pontoSelecionado);
                 tokenSelecionado = null;
-            }
-                
+            }//Se algum token já foi selecionado e não foi atingido nenhum outro token executa o movimento              
         }
-        else if (tokensHit.Count >=1)
+        else if (tokensHit.Count ==1)
         {
             if (tokenSelecionado != null)
             {
                 tokenSelecionado.Selecionado(false); //Remove a seleção do token anterior se ele existe
             }
-            tokenSelecionado = tokensHit[0];
-            tokenSelecionado.Selecionado(true);
-        }      
+            SelecionarToken(tokensHit[0]);
+            
+        }
+        else
+        {
+            if (tokenSelecionado != null)
+            {
+                tokenSelecionado.Selecionado(false); //Remove a seleção do token anterior se ele existe
+            }
+            Vector3 posicaoNaTela = Mouse.current.position.ReadValue() - new Vector2(880, 540); //Desloca a posição do mouse com um pequeno offset ao lado do token
+            joggUi.PosicionarLista(posicaoNaTela, tokensHit,1);
+        }//Quando é acertado mais de um token
     }
     private void Mouse2Clicado(InputAction.CallbackContext context)
     {
@@ -147,7 +154,12 @@ public class JogadorControlador : NetworkBehaviour
         else if (tokensHit.Count >= 1)
         {
             Vector3 posicaoNaTela = Mouse.current.position.ReadValue() - new Vector2(880,540); //Desloca a posição do mouse com um pequeno offset ao lado do token
-            joggUi.PosicionarLista(posicaoNaTela, tokensHit);
+            joggUi.PosicionarLista(posicaoNaTela, tokensHit,2);
         }
+    }
+    public void SelecionarToken(Token token)
+    {
+        tokenSelecionado = token;
+        tokenSelecionado.Selecionado(true);
     }
 }
