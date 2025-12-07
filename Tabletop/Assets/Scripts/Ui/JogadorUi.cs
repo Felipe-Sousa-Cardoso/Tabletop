@@ -15,7 +15,6 @@ public class JogadorUi : MonoBehaviour
     [SerializeField] UiAjustes UiAjustes;
 
     public JogadorControlador jogg;
-    [SerializeField] int qualmouse =0;
     private void Start()
     {
         StartColor();
@@ -48,9 +47,8 @@ public class JogadorUi : MonoBehaviour
     }
     #endregion
     #region Ui interativa
-    public void PosicionarLista(Vector3 posicao, List<Token> tokens, int qualMouse) //o int serve para ver qual clique do mouse foi feito
+    public void PosicionarLista(Vector3 posicao, List<Token> tokens)
     {
-        qualmouse = qualMouse;
         UiInterativaSelecioanar.tokenSSelecionado = tokens.ToArray();
         for (int i = 0; i < 3; i++)
         {
@@ -67,7 +65,7 @@ public class JogadorUi : MonoBehaviour
         int N = 0;
         foreach (Token t in tokens)
         {
-            if (N < 4)
+            if (N < 3)
             {
                 UiInterativaSelecioanar.BotoesDeSelecao[N].gameObject.SetActive(true);
                 UiInterativaSelecioanar.textoBotes[N].text = t.nome.Value.ToString();
@@ -107,14 +105,8 @@ public class JogadorUi : MonoBehaviour
         // da lista original que gerou o menu (você precisará armazenar essa lista).
 
         UiInterativaSelecioanar.Tabela.gameObject.SetActive(false); //desativa a hud de seleção
-        switch (qualmouse)
-        {
-            case 1:jogg.SelecionarToken(UiInterativaSelecioanar.tokenSelecionado); break;
-            case 2:
-                UiInterativaDefinir.Base.gameObject.SetActive(true); //Ativa a hud de definir variáveis
-                MostrarInformaçõesToken(); break;
-        }
-        
+        UiInterativaDefinir.Base.gameObject.SetActive(true); //Ativa a hud de definir variáveis
+        MostrarInformaçõesToken();
     }
 
     private void DefinirBotoesDefinir()
