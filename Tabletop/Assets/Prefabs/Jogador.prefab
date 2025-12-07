@@ -45,7 +45,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 2038424680
+  GlobalObjectIdHash: 1747121361
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -71,7 +71,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JogadorControlador
   ShowTopMostFoldoutHeaderGroup: 1
-  pontoSelecionado: {x: 0, y: 0, z: 0}
-  medidorPrefab: {fileID: 3977157718956533550, guid: 21f2a202a0df9d744975ac2feeb7b31a, type: 3}
   tokenPrefab: {fileID: 7441738740805520862, guid: cb3ae01486dbca04489d1e1e1c7ee693, type: 3}
-  cor: {r: 0, g: 0, b: 0, a: 0}
