@@ -2595,6 +2595,7 @@ MonoBehaviour:
   UiAjustes:
     resetarCamera: {fileID: 1240007189}
   jogg: {fileID: 0}
+  qualmouse: 0
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0

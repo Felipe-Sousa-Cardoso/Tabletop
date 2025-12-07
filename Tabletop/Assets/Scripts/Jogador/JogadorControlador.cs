@@ -8,40 +8,76 @@ public class JogadorControlador : NetworkBehaviour
 {
     Camera cam;
 
-    [SerializeField] Vector3 pontoSelecionado;
+    [SerializeField] Vector3 pontoSelecionado = new();
+    [SerializeField] Vector3 segundoPontoSelecionado = new();
     JogadorUi joggUi;
     InputSystem_Actions action;
-    Token tokenSelecionado;
 
+    [SerializeField] GameObject medidorPrefab;
+    GameObject medidorInstanciado;
+    JogadorMedições jogMedições;
+    bool modoMedição; //Alternado com o botão de espaço, alterna para o clique do mouse para os modos de medição
+    bool cliqueMedição; //Alternado para ver o tamanho do medidor
+
+    Token tokenSelecionado;
     [SerializeField] GameObject tokenPrefab;
     List<GameObject> tokensInstanciados = new();
     public Color cor;
 
     bool estadoDeInput = true;//Usado para controlar quando o jogador pode fazer inputs
     public bool EstadoDeInput { get => estadoDeInput; set => estadoDeInput = value; }
+    public Vector3 PontoSelecionado { get => pontoSelecionado; set => pontoSelecionado = value; }
+    public Vector3 SegundoPontoSelecionado { get => segundoPontoSelecionado; set => segundoPontoSelecionado = value; }
 
     int maskDoraycast; //Usado para detectar o mapa nas colisões
-
-    
 
     private void Update()
     {
         if (!IsOwner) return;
         MovimentoCamera();
     }
+    private void FixedUpdate()
+    {
+        
+        if (!IsOwner) return;
+        if (cliqueMedição)
+        {
+            
+            Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue()); //Faz um raio da camera até onde o mouse está
+            if (Physics.Raycast(ray, out RaycastHit hit, 300, maskDoraycast))
+            {
+                SegundoPontoSelecionado = hit.point;
+                DefinirLineRenderRpc(PontoSelecionado, SegundoPontoSelecionado);           
+            }
+        }
+        if (!modoMedição)
+        {
+            jogMedições.gameObject.SetActive(false);
+        }
+        else
+        {
+            jogMedições.gameObject.SetActive(true);
+        }
+    }
+    #region Spawn
     public override void OnNetworkSpawn()
     {
         if (!IsOwner) return;
 
         tokenSpawnRpc();
         tokenSpawnRpc();
+        medidorSpawnRpc();
+        jogMedições = medidorInstanciado.GetComponent<JogadorMedições>();
 
+        jogMedições = FindAnyObjectByType<JogadorMedições>();
         cam = Camera.main; //Define que a camera que será movimentada será a principal
 
         action = new InputSystem_Actions();// só habilita input no jogador local
-        action.Enable(); 
+        action.Enable();
         action.Player.Mouse.performed += MouseClicado;
+        action.Player.Mouse.canceled += MouseCancelado;
         action.Player.Mouse2.performed += Mouse2Clicado;
+        action.Player.Especial.performed += EspecialClicado;
 
         maskDoraycast = LayerMask.GetMask("Mapa", "Tokens");
 
@@ -49,20 +85,52 @@ public class JogadorControlador : NetworkBehaviour
         joggUi.jogg = this;
         joggUi.Ajustes();
     }
+
+    
+    #endregion
+    #region Tokens
     [Rpc(SendTo.Server)]
     public void tokenSpawnRpc()
     {
-        GameObject token = Instantiate(tokenPrefab,Vector3.zero,Quaternion.identity);
+        GameObject token = Instantiate(tokenPrefab, Vector3.zero, Quaternion.identity);
         tokensInstanciados.Add(token);
         token.GetComponent<NetworkObject>().Spawn();
         token.GetComponent<Token>().nome.Value = "token" + tokensInstanciados.Count;
     }
+    public void SelecionarToken(Token token)
+    {
+        tokenSelecionado = token;
+        tokenSelecionado.Selecionado(true);
+    }
+    #endregion
+    #region Medições
+    [Rpc(SendTo.Server)]
+    public void medidorSpawnRpc()
+    { 
+        GameObject medidor = Instantiate(medidorPrefab, Vector3.zero, Quaternion.identity);
+        medidor.GetComponent<NetworkObject>().Spawn();
+        medidorInstanciado = medidor;
+    }
+    [Rpc(SendTo.Server)]
+    public void DefinirLineRenderRpc(Vector3 inicial, Vector3 final)
+    {
+        jogMedições.Ponto1.Value = inicial;
+        jogMedições.Ponto2.Value = final;
+    }
+    
+    #endregion
+    #region Camera
     void MovimentoCamera()
     {
         if (!estadoDeInput) return;
+        if (cam)
+        {
+            Debug.Log("cam");
+        }
+        
         Vector3 move = cam.transform.right * action.Player.Movimento.ReadValue<Vector2>().x + //compõe o movimento da camera multiplicando os vetores de movimento pelos vetores da camera, de forma que ela
                                                                                               //se oriente para direçao da camera em vez dos eixos normais
-            cam.transform.up * action.Player.Zoom.ReadValue<float>()+
+            cam.transform.up * action.Player.Zoom.ReadValue<float>() +
             Vector3.ProjectOnPlane(cam.transform.forward, Vector3.up).normalized * action.Player.Movimento.ReadValue<Vector2>().y;
 
         cam.transform.position += move;
@@ -76,6 +144,7 @@ public class JogadorControlador : NetworkBehaviour
         cam.transform.position = new Vector3(1, 16, -28);
         cam.transform.rotation = Quaternion.Euler(38, 0, 0);
     }//Chamado pela UI para resetar a posição da camera
+    #endregion
 
     [Rpc(SendTo.Server)]
     public void DefinirCorRpc(Color cor)
@@ -86,7 +155,7 @@ public class JogadorControlador : NetworkBehaviour
         }
     }//Cor dos tokens
     private void MouseClicado(InputAction.CallbackContext context)
-    {
+    {    
         Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue()); //Faz um raio da camera até onde o mouse está
 
         RaycastHit[] hits = Physics.RaycastAll(ray, 300f, maskDoraycast); //Detecta todos os hits em uma esfera em volta do clique
@@ -98,37 +167,60 @@ public class JogadorControlador : NetworkBehaviour
                 tokensHit.Add(h.collider.GetComponent<Token>());
             if (h.collider.CompareTag("Mapa"))
             {
-                pontoSelecionado =h.point;
+                PontoSelecionado = h.point;
             }
-        } //Separa os hits que atingiram tokens e o hit que atingiu o terreno
+        } //Separa os hits que atingiram tokens e o hit que atingiu o terreno     
+        if (!modoMedição)
+        {
+            #region Controle dos tokens
+            if (tokensHit.Count == 0)
+            {
+                if (tokenSelecionado != null)
+                {
+                    tokenSelecionado.Selecionado(false);
+                    tokenSelecionado.MoverRpc(PontoSelecionado);
+                    tokenSelecionado = null;
+                }//Se algum token já foi selecionado e não foi atingido nenhum outro token executa o movimento              
+            }
+            else if (tokensHit.Count == 1)
+            {
+                if (tokenSelecionado != null)
+                {
+                    tokenSelecionado.Selecionado(false); //Remove a seleção do token anterior se ele existe
+                }
+                SelecionarToken(tokensHit[0]);
 
-        if (tokensHit.Count == 0)
-        {
-            if (tokenSelecionado != null)
-            {
-                tokenSelecionado.Selecionado(false);
-                tokenSelecionado.MoverRpc(pontoSelecionado);
-                tokenSelecionado = null;
-            }//Se algum token já foi selecionado e não foi atingido nenhum outro token executa o movimento              
-        }
-        else if (tokensHit.Count ==1)
-        {
-            if (tokenSelecionado != null)
-            {
-                tokenSelecionado.Selecionado(false); //Remove a seleção do token anterior se ele existe
             }
-            SelecionarToken(tokensHit[0]);
-            
+            else
+            {
+                if (tokenSelecionado != null)
+                {
+                    tokenSelecionado.Selecionado(false); //Remove a seleção do token anterior se ele existe
+                }
+                Vector3 posicaoNaTela = Mouse.current.position.ReadValue() - new Vector2(880, 540); //Desloca a posição do mouse com um pequeno offset ao lado do token
+                joggUi.PosicionarLista(posicaoNaTela, tokensHit, 1);
+            }//Quando é acertado mais de um token
+            #endregion
         }
         else
         {
-            if (tokenSelecionado != null)
-            {
-                tokenSelecionado.Selecionado(false); //Remove a seleção do token anterior se ele existe
-            }
-            Vector3 posicaoNaTela = Mouse.current.position.ReadValue() - new Vector2(880, 540); //Desloca a posição do mouse com um pequeno offset ao lado do token
-            joggUi.PosicionarLista(posicaoNaTela, tokensHit,1);
-        }//Quando é acertado mais de um token
+            #region Controle da medição
+            cliqueMedição = true;
+            jogMedições.transform.position = PontoSelecionado;
+            #endregion
+        }
+    }
+    private void MouseCancelado(InputAction.CallbackContext context)
+    {
+        if (!modoMedição)
+        {
+           
+        }
+        else
+        {
+            
+            cliqueMedição= false;
+        }
     }
     private void Mouse2Clicado(InputAction.CallbackContext context)
     {
@@ -143,23 +235,29 @@ public class JogadorControlador : NetworkBehaviour
                 tokensHit.Add(h.collider.GetComponent<Token>());
             if (h.collider.CompareTag("Mapa"))
             {
-                pontoSelecionado = h.point;
+                PontoSelecionado = h.point;
             }
         } //Separa os hits que atingiram tokens e o hit que atingiu o terreno
+        if (!modoMedição)
+        {
+            if (tokensHit.Count == 0)
+            {
+                joggUi.ApagarUISelecionarDefinir();
+            }
+            else if (tokensHit.Count >= 1)
+            {
+                Vector3 posicaoNaTela = Mouse.current.position.ReadValue() - new Vector2(880, 540); //Desloca a posição do mouse com um pequeno offset ao lado do token
+                joggUi.PosicionarLista(posicaoNaTela, tokensHit, 2);
+            }
+        }
+        else
+        {
 
-        if (tokensHit.Count == 0)
-        {
-            joggUi.ApagarUISelecionarDefinir();
         }
-        else if (tokensHit.Count >= 1)
-        {
-            Vector3 posicaoNaTela = Mouse.current.position.ReadValue() - new Vector2(880,540); //Desloca a posição do mouse com um pequeno offset ao lado do token
-            joggUi.PosicionarLista(posicaoNaTela, tokensHit,2);
-        }
+        
     }
-    public void SelecionarToken(Token token)
+    private void EspecialClicado(InputAction.CallbackContext context)
     {
-        tokenSelecionado = token;
-        tokenSelecionado.Selecionado(true);
+        modoMedição = !modoMedição;
     }
-}
+} 
